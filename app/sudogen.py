@@ -26,7 +26,7 @@ def generate_board():
 
     if s.check_board():
         print(s)
-        print(f"Time taken {(end - start) * 1000}ms, number of tries: {count}")
+        print(f"Time taken {(end - start) * 1000:.4f}ms, number of tries: {count}")
     else:
         print("Board invalid")
 

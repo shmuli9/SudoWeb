@@ -1,5 +1,5 @@
 class SudokuGrid:
-    allowed_digits = {0, 1, 2, 3, 4, 5, 6, 7, 8}
+    _ALLOWED_DIGITS = {0, 1, 2, 3, 4, 5, 6, 7, 8}
 
     def __init__(self, board_size=9):
         self.array = [[-1 for _ in range(board_size)] for __ in range(board_size)]
@@ -38,15 +38,8 @@ class SudokuGrid:
         :param col: column index
         :return: set of non-conflicting digits
         """
-
-        add = col // 3
-        mult = (row // 3) * 3
-        box_num = mult + add
-
-        conflicts = self.get_row(row) | self.get_column(col) | self.get_box(box_num)
-        possible = self.allowed_digits - conflicts
-
-        return list(possible)
+        return list(self._ALLOWED_DIGITS - (
+                self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3)))
 
     def check_board(self):
         """
