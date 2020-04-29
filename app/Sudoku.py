@@ -27,7 +27,7 @@ class SudokuGrid:
         return box
 
     def get_row_rest(self, row, col):
-        ret = self.array[row][:col] + self.array[row][col+1:]
+        ret = self.array[row][:col] + self.array[row][col + 1:]
         return set(ret)
 
     def get_column_rest(self, row, col):
@@ -69,6 +69,12 @@ class SudokuGrid:
         return list(possible)
 
     def check_board(self):
+        """
+        Returns True if no cell has conflicts with other cells, False otherwise
+
+        todo: check that all digits occur (probably if the board has no conflicts then it is valid, unless using other chars)
+        :return:
+        """
         for row in range(9):
             for col in range(9):
                 add = col // 3
@@ -82,11 +88,18 @@ class SudokuGrid:
         return True
 
     def __str__(self):
-        out = "-----------------------------------\n"
+        out = "-------------------------\n"
         row_count = 1
+        col_count = 1
         for row in self.array:
-            row_count += 1
+            out += "| "
             for digit in row:
-                out += str(digit + 1 if digit is not -1 else "X") + " | "
-            out += "\n-----------------------------------\n"
+                out += str(digit + 1 if digit is not -1 else "X") + " "
+                if col_count % 3 == 0:
+                    out += "| "
+                col_count += 1
+            out += "\n"
+            if row_count % 3 == 0:
+                out += "-------------------------\n"
+            row_count += 1
         return out

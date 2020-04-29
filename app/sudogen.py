@@ -30,5 +30,4 @@ def generate_board():
     else:
         print("Board invalid")
 
-
 generate_board()
