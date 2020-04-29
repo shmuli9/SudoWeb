@@ -4,40 +4,20 @@ class SudokuGrid:
     def __init__(self, board_size=9):
         self.array = [[-1 for _ in range(board_size)] for __ in range(board_size)]
 
-    def get_row(self, index):
-        return set(self.array[index])
-
-    def get_column(self, index):
-        column = set()
-        for row in self.array:
-            column.add(row[index])
-        return column
-
-    def get_box(self, index):
-        box = set()
-        box_column = index % 3  # which box column to find the box in
-        box_row = index // 3  # which box row to find the box in
-
-        column_num_max = ((box_column + 1) * 3)
-        row_num_max = ((box_row + 1) * 3)
-
-        for row in range(row_num_max - 3, row_num_max):
-            for digit in range(column_num_max - 3, column_num_max):
-                box.add(self.array[row][digit])
-        return box
-
-    def get_row_rest(self, row, col):
+    def get_row(self, row, col=None):
+        if col is None:
+            return set(self.array[row])
         ret = self.array[row][:col] + self.array[row][col + 1:]
         return set(ret)
 
-    def get_column_rest(self, row, col):
+    def get_column(self, col, row=None):
         column = set()
         for i in range(9):
-            if i is not row:
+            if row is None or i is not row:
                 column.add(self.array[i][col])
         return column
 
-    def get_box_rest(self, box_num, row_idx, col):
+    def get_box(self, box_num, row_idx=None, col=None):
         box = set()
         box_column = box_num % 3  # which box column to find the box in
         box_row = box_num // 3  # which box row to find the box in
@@ -47,7 +27,7 @@ class SudokuGrid:
 
         for row in range(row_num_max - 3, row_num_max):
             for digit in range(column_num_max - 3, column_num_max):
-                if row is not row_idx and digit is not col:
+                if (row_idx is None and col is None) or (row is not row_idx and digit is not col):
                     box.add(self.array[row][digit])
         return box
 
@@ -81,8 +61,7 @@ class SudokuGrid:
                 mult = (row // 3) * 3
                 box_num = mult + add
 
-                conflicts = self.get_row_rest(row, col) | self.get_column_rest(row, col) | self.get_box_rest(box_num,
-                                                                                                             row, col)
+                conflicts = self.get_row(row, col) | self.get_column(col, row) | self.get_box(box_num, row, col)
                 if self.array[row][col] in conflicts:
                     return False
         return True
