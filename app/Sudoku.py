@@ -31,15 +31,17 @@ class SudokuGrid:
                     box.add(self.array[row][digit])
         return box
 
-    def possible_digits(self, row, col):
+    def possible_digits(self, row=None, col=None):
         """
         Find the possible digits for current cell
         :param row: row index
         :param col: column index
         :return: set of non-conflicting digits
         """
-        return list(self._ALLOWED_DIGITS - (
-                self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3)))
+        if row is None or col is None:
+            return self._ALLOWED_DIGITS
+        return self._ALLOWED_DIGITS - (
+                    self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3))
 
     def check_board(self):
         """

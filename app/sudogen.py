@@ -16,7 +16,7 @@ def generate_board():
             for j in range(9):
                 possible = s.possible_digits(i, j)
                 if possible:
-                    s.array[i][j] = random.choice(possible)
+                    s.array[i][j] = random.choice(tuple(possible))
                     continue
                 cont = True
                 break
@@ -36,7 +36,7 @@ def test_board_generation(repeat=10):
     avg = sum(results) / len(results)
     _max = max(results)
     _min = min(results)
-    _total = sum(results)/1000
+    _total = sum(results) / 1000
 
     precision = ".4f"
     print(
@@ -47,7 +47,7 @@ def test_board_generation(repeat=10):
 
     if repeat <= 10:
         for i in range(len(boards)):
-            print(f"Board {i+1}:")
+            print(f"Board {i + 1}:")
             print(boards[i])
 
 
