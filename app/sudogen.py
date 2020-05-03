@@ -28,7 +28,13 @@ sudoku_grid = SudokuGrid()
 
 
 def rec_gen_board():
-    possible = sudoku_grid.possible_digits()
+    """
+    Start from top left cell (0,0) place a random digit and then call try_a_digit to recursively run thorugh the rest
+    of the board, attemptiong to place random, legal digits, and recursively unwinding and trying the next value if a
+    cell down the line becomes impossible to fill
+     :return:
+    """
+    possible = sudoku_grid.possible_digits(0, 0)
     for p in random.sample(possible, len(possible)):
         sudoku_grid.array[0][0] = p
         if try_a_digit(0, 1):
@@ -48,10 +54,14 @@ def try_a_digit(row, column):
 
     if possible:
         for p in random.sample(possible, len(possible)):
-            sudoku_grid.array[row][column] = p
-            if next_row == 9 or try_a_digit(next_row, next_col):  # when end of board reached (next_row==9) return True
+            sudoku_grid.array[row][column] = p  # set cell to random selected value
+            if next_row == 9 or try_a_digit(next_row, next_col):
+                """Upon reaching the end of board (next_row==9) return True, indicating the final digit was placed 
+                successfully. Otherwise check the next digit (try_a_digit) to see if it fits, if it does then return 
+                True. In every other case return False, indicating a cell could not be completed """
                 return True
-    sudoku_grid.array[row][column] = -1
+
+    sudoku_grid.array[row][column] = -1  # if cell is found to be impossible, reset to -1 and unwind one stack frame
     return False
 
 
