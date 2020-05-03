@@ -1,4 +1,4 @@
-from app import sudogen
+from app import SudoGen
 
 if __name__ == '__main__':
-    sudogen.test_board_generation(10000)
+    SudoGen.test_board_generation()

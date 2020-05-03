@@ -1,16 +1,44 @@
 class SudokuGrid:
-    _ALLOWED_DIGITS = {0, 1, 2, 3, 4, 5, 6, 7, 8}
+    _ALLOWED_DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
     def __init__(self, board_size=9):
         self.array = [[-1 for _ in range(board_size)] for __ in range(board_size)]
 
     def get_row(self, row, col=None):
+        """
+        Returns values in the specified row
+        Rows are laid out like so:
+        -----------
+             0
+        -----------
+             1
+        -----------
+             2
+        -----------
+            ...
+        -----------
+             9
+        -----------
+        :param row: The row to return
+        :param col: If provided, returned values will exclude specified cell
+        :return:
+        """
         if col is None:
             return set(self.array[row])
         ret = self.array[row][:col] + self.array[row][col + 1:]
         return set(ret)
 
     def get_column(self, col, row=None):
+        """
+        Returns values in the specified column
+        Columns are laid out like so:
+        |   |   |   |     |   |
+        | 0 | 1 | 2 | ... | 9 |
+        |   |   |   |     |   |
+        :param col: The column to return
+        :param row: If provided, returned values will exclude specified cell
+        :return:
+        """
         column = set()
         for i in range(9):
             if row is None or i is not row:
@@ -18,6 +46,17 @@ class SudokuGrid:
         return column
 
     def get_box(self, box_num, row_idx=None, col=None):
+        """
+        Returns values in the specified box
+        Boxes are laid out like so:
+        | 0 | 1 | 2 |
+        | 3 | 4 | 5 |
+        | 6 | 7 | 8 |
+        :param box_num: the box number to fetch
+        :param row_idx: row index - if given with col, will omit the specified cell from the returned set
+        :param col: column index - if given with row, will omit the specified cell from the returned set
+        :return: Set of values contained in the box (8 or 9 values)
+        """
         box = set()
         box_column = box_num % 3  # which box column to find the box in
         box_row = box_num // 3  # which box row to find the box in
@@ -33,7 +72,7 @@ class SudokuGrid:
 
     def possible_digits(self, row=None, col=None):
         """
-        Find the possible digits for current cell
+        Find the possible digits for current cell, by subtracting confliciting digits from set of allowed digits (1-9)
         :param row: row index
         :param col: column index
         :return: set of non-conflicting digits
@@ -68,7 +107,7 @@ class SudokuGrid:
         for row in self.array:
             out += "| "
             for digit in row:
-                out += str(digit + 1 if digit is not -1 else "X") + " "
+                out += str(digit if digit is not -1 else "X") + " "
                 if col_count % 3 == 0:
                     out += "| "
                 col_count += 1

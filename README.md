@@ -10,7 +10,8 @@ digits in the cells until the board is full. The algorithm will unwind if it com
 populated, and attempt to place a different digit in the previous cell, doing so recursively until the board is full.
 
 Originally I used a basic loop, which would restart the entire board every time a cell was found to be impossible to fill.
-Comparing old (loop) and new (recursive), generating 10,000 Sudoku boards:
+
+##### Comparing old (loop) and new (recursive) algorithms, generating 10,000 Sudoku boards:
 
 |           | Time taken to generate 10,000 boards (s) |
 |-----------|------------------------------------------|

@@ -36,8 +36,8 @@ def try_a_digit(row, column):
             sudoku_grid.array[row][column] = p  # set cell to random selected value
             if next_row == 9 or try_a_digit(next_row, next_col):
                 """Upon reaching the end of board (next_row==9) return True, indicating the final digit was placed 
-                successfully. Otherwise check the next digit (try_a_digit) to see if it fits, if it does then return 
-                True. In every other case return False, indicating a cell could not be completed """
+                successfully. Otherwise check the next digit (try_a_digit) to see if it fits, returning True if it does.
+                In every other case return False, indicating a cell could not be completed """
                 return True
 
     sudoku_grid.array[row][column] = -1  # if cell is found to be impossible, reset to -1 and unwind one stack frame
