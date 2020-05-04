@@ -14,7 +14,7 @@ def rec_gen_board():
      :return:
     """
     possible = sudoku_grid.possible_digits(0, 0)
-    for p in random.sample(possible, len(possible)):
+    for p in random.sample(possible, len(possible)):  # random is required so that each board is (probably) unique
         sudoku_grid.array[0][0] = p
         if try_a_digit(0, 1):
             return sudoku_grid
@@ -32,7 +32,7 @@ def try_a_digit(row, column):
     possible = sudoku_grid.possible_digits(row, column)  # get possible digits for current cell
 
     if possible:
-        for p in random.sample(possible, len(possible)):
+        for p in random.sample(possible, len(possible)):  # random is required so that each board is (probably) unique
             sudoku_grid.array[row][column] = p  # set cell to random selected value
             if next_row == 9 or try_a_digit(next_row, next_col):
                 """Upon reaching the end of board (next_row==9) return True, indicating the final digit was placed 
