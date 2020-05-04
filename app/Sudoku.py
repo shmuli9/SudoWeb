@@ -17,7 +17,7 @@ class SudokuGrid:
         -----------
             ...
         -----------
-             9
+             8
         -----------
         :param row: The row to return
         :param col: If provided, returned values will exclude specified cell
@@ -33,7 +33,7 @@ class SudokuGrid:
         Returns values in the specified column
         Columns are laid out like so:
         |   |   |   |     |   |
-        | 0 | 1 | 2 | ... | 9 |
+        | 0 | 1 | 2 | ... | 8 |
         |   |   |   |     |   |
         :param col: The column to return
         :param row: If provided, returned values will exclude specified cell
