@@ -50,8 +50,8 @@ def test_board_generation(repeat=10):
     for _ in range(repeat):
         sudoku_grid.__init__()  # reinitialise the SudokuGrid object before each run
         start = time.time()
-        # generate_board()
-        boards.append(rec_gen_board())
+        boards.append(str(rec_gen_board()))
+        # rec_gen_board()
         end = time.time()
         results.append((end - start) * 1000)
 
