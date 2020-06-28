@@ -107,7 +107,7 @@ class SudokuGrid:
         for row in self.array:
             out += "| "
             for digit in row:
-                out += str(digit if digit is not -1 else "X") + " "
+                out += str(digit if digit != -1 else "X") + " "
                 if col_count % 3 == 0:
                     out += "| "
                 col_count += 1
