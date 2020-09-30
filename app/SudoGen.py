@@ -40,54 +40,26 @@ def try_a_digit(row, column):
                 In every other case return False, indicating a cell could not be completed """
                 return True
 
-    sudoku_grid.array[row][column] = -1  # if cell is found to be impossible, reset to -1 and unwind one stack frame
+    sudoku_grid.array[row][column] = None  # if cell is found to be impossible, reset to None and unwind one stack frame
     return False
 
 
 def test_board_generation(repeat=10):
-    results = []
     boards = []
+
+    start = time.time()
     for _ in range(repeat):
         sudoku_grid.__init__()  # reinitialise the SudokuGrid object before each run
-        start = time.time()
-        # boards.append(str(rec_gen_board()))
         rec_gen_board()
-        end = time.time()
-        results.append((end - start) * 1000)
-
-    avg = sum(results) / len(results)
-    _max = max(results)
-    _min = min(results)
-    _total = sum(results) / 1000
+    end = time.time()
+    total = (end - start)
 
     precision = ".4f"
-    print(
-        f"{repeat} Sudoku boards generated in {_total:{precision}}s."
-        f"\nAverage time was {avg:{precision}}ms"
-        f"\nMax time was {_max:{precision}}ms"
-        f"\nMin time was {_min}ms")
+
+    print(f"{repeat} Sudoku boards generated in {total:{precision}}s.")
+    print(f"Average time was {(total / repeat) * 1000:{precision}}ms")
 
     if repeat <= 10:
         for i in range(len(boards)):
             print(f"Board {i + 1}:")
             print(boards[i])
-
-# Old algorithm, non-recursive
-# def generate_board():
-#     cont = True
-#     # count = 1
-#
-#     while cont:
-#         s = SudokuGrid()
-#         # count += 1
-#         cont = False
-#         for i in range(9):
-#             for j in range(9):
-#                 possible = s.possible_digits(i, j)
-#                 if possible:
-#                     s.array[i][j] = random.choice(tuple(possible))
-#                     continue
-#                 cont = True
-#                 break
-#             if cont: break
-#     return s

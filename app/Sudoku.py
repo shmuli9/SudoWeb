@@ -2,7 +2,7 @@ class SudokuGrid:
     _ALLOWED_DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
     def __init__(self, board_size=9):
-        self.array = [[-1 for _ in range(board_size)] for __ in range(board_size)]
+        self.array = [[None for _ in range(board_size)] for __ in range(board_size)]
 
     def get_row(self, row, col=None):
         """
@@ -107,7 +107,7 @@ class SudokuGrid:
         for row in self.array:
             out += "| "
             for digit in row:
-                out += str(digit if digit != -1 else "X") + " "
+                out += str(digit if digit != None else "X") + " "
                 if col_count % 3 == 0:
                     out += "| "
                 col_count += 1
