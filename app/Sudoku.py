@@ -26,7 +26,13 @@ class SudokuGrid:
         :param col: If provided, returned values will exclude specified cell
         :return:
         """
-        return set(np.delete(self.array[row], col) if col else self.array[row])
+
+        row = self.array[row].view()
+
+        if col:
+            row[col] = None
+
+        return set(row)
 
     def get_column(self, col, row=None):
         """
@@ -39,7 +45,13 @@ class SudokuGrid:
         :param row: If provided, returned values will exclude specified cell
         :return:
         """
-        return set(np.delete(self.array[:, col], row) if row else self.array[:, col])
+
+        col = self.array[:, col].view()
+
+        if row:
+            col[row] = None
+
+        return set(col)
 
     def get_box(self, box_num, row=None, col=None):
         """
@@ -59,10 +71,11 @@ class SudokuGrid:
         col_max = ((box_column + 1) * 3)
         row_max = ((box_row + 1) * 3)
 
+        box = self.array[row_max - 3:row_max, col_max - 3:col_max].flatten()
+
         if (row and col) and (row_max - 3 < row < row_max) and (col_max - 3 < col < col_max):
-            box = np.delete(self.array[row_max - 3:row_max, col_max - 3:col_max], ((row * col) % 9) - 1)
-        else:
-            box = self.array[row_max - 3:row_max, col_max - 3:col_max].flatten()
+            box = box.view()
+            box[((row * col) % 9) - 1] = None
 
         return set(box)  # for why set() is used over np.unique(), see https://stackoverflow.com/a/59111870/13408445
 
