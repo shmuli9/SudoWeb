@@ -82,7 +82,8 @@ class SudokuGrid:
         if row is None or col is None:
             return self._ALLOWED_DIGITS
 
-        return self._ALLOWED_DIGITS - self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3)
+        conflicts = self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3)
+        return self._ALLOWED_DIGITS - conflicts
 
     def check_board(self):
         """
