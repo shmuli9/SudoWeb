@@ -45,7 +45,7 @@ class SudokuGrid:
                 column.add(self.array[i][col])
         return column
 
-    def get_box(self, box_num, row_idx=None, col=None):
+    def get_box(self, box_num, row=None, col=None):
         """
         Returns values in the specified box
         Boxes are laid out like so:
@@ -53,21 +53,22 @@ class SudokuGrid:
         | 3 | 4 | 5 |
         | 6 | 7 | 8 |
         :param box_num: the box number to fetch
-        :param row_idx: row index - if given with col, will omit the specified cell from the returned set
+        :param row: row index - if given with col, will omit the specified cell from the returned set
         :param col: column index - if given with row, will omit the specified cell from the returned set
         :return: Set of values contained in the box (8 or 9 values)
         """
-        box = set()
         box_column = box_num % 3  # which box column to find the box in
         box_row = box_num // 3  # which box row to find the box in
 
-        column_num_max = ((box_column + 1) * 3)
-        row_num_max = ((box_row + 1) * 3)
+        col_max = ((box_column + 1) * 3)
+        col_min = col_max - 3
+        row_max = ((box_row + 1) * 3)
 
-        for row in range(row_num_max - 3, row_num_max):
-            for digit in range(column_num_max - 3, column_num_max):
-                if (row_idx is None and col is None) or (row is not row_idx and digit is not col):
-                    box.add(self.array[row][digit])
+        box = set()
+        for r in range(row_max - 3, row_max):
+            for c in range(col_min, col_max):
+                if (row is None or col is None) or (r is not row and c is not col):
+                    box.add(self.array[r][c])
         return box
 
     def possible_digits(self, row=None, col=None):
@@ -79,8 +80,9 @@ class SudokuGrid:
         """
         if row is None or col is None:
             return self._ALLOWED_DIGITS
-        return self._ALLOWED_DIGITS - (
-                    self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3))
+
+        conflicts = self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3)
+        return self._ALLOWED_DIGITS - conflicts
 
     def check_board(self):
         """
