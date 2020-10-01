@@ -26,13 +26,7 @@ class SudokuGrid:
         :param col: If provided, returned values will exclude specified cell
         :return:
         """
-
-        row = self.array[row].view()
-
-        if col:
-            row[col] = None
-
-        return set(row)
+        return set(self.array[row, col + 1:]) | set(self.array[row, :col]) if col else set(self.array[row])
 
     def get_column(self, col, row=None):
         """
@@ -45,13 +39,7 @@ class SudokuGrid:
         :param row: If provided, returned values will exclude specified cell
         :return:
         """
-
-        col = self.array[:, col].view()
-
-        if row:
-            col[row] = None
-
-        return set(col)
+        return set(self.array[row + 1:, col]) | set(self.array[:row, col]) if row else set(self.array[:, col])
 
     def get_box(self, box_num, row=None, col=None):
         """
@@ -69,13 +57,18 @@ class SudokuGrid:
         box_row = box_num // 3  # which box row to find the box in
 
         col_max = ((box_column + 1) * 3)
+        col_min = col_max - 3
+
         row_max = ((box_row + 1) * 3)
+        row_min = row_max - 3
 
-        box = self.array[row_max - 3:row_max, col_max - 3:col_max].flatten()
+        box = self.array[row_min:row_max, col_min:col_max].flatten()
 
-        if (row and col) and (row_max - 3 < row < row_max) and (col_max - 3 < col < col_max):
-            box = box.view()
-            box[((row * col) % 9) - 1] = None
+        if (row is not None and col is not None) and (row_min <= row < row_max) and (col_min <= col < col_max):
+            r = (row % 3) + 1
+            c = (col % 3) + 1
+            pos = (r * c) - 1
+            return set(box[:pos]) | set(box[pos + 1:])
 
         return set(box)  # for why set() is used over np.unique(), see https://stackoverflow.com/a/59111870/13408445
 
@@ -88,8 +81,8 @@ class SudokuGrid:
         """
         if row is None or col is None:
             return self._ALLOWED_DIGITS
-        return self._ALLOWED_DIGITS - (
-                self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3))
+
+        return self._ALLOWED_DIGITS - self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3)
 
     def check_board(self):
         """
