@@ -15,7 +15,7 @@ def rec_gen_board():
     """
     possible = sudoku_grid.possible_digits(0, 0)
     for p in random.sample(possible, len(possible)):  # random is required so that each board is (probably) unique
-        sudoku_grid.array[0][0] = p
+        sudoku_grid.array[0, 0] = p
         if try_a_digit(0, 1):
             return sudoku_grid
     print("Failed to generate board")
@@ -33,14 +33,14 @@ def try_a_digit(row, column):
 
     if possible:
         for p in random.sample(possible, len(possible)):  # random is required so that each board is (probably) unique
-            sudoku_grid.array[row][column] = p  # set cell to random selected value
+            sudoku_grid.array[row, column] = p  # set cell to random selected value
             if next_row == 9 or try_a_digit(next_row, next_col):
                 """Upon reaching the end of board (next_row==9) return True, indicating the final digit was placed 
                 successfully. Otherwise check the next digit (try_a_digit) to see if it fits, returning True if it does.
                 In every other case return False, indicating a cell could not be completed """
                 return True
 
-    sudoku_grid.array[row][column] = None  # if cell is found to be impossible, reset to None and unwind one stack frame
+    sudoku_grid.array[row, column] = None  # if cell is found to be impossible, reset to None and unwind one stack frame
     return False
 
 

@@ -1,8 +1,11 @@
+import numpy as np
+
+
 class SudokuGrid:
     _ALLOWED_DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
     def __init__(self, board_size=9):
-        self.array = [[None for _ in range(board_size)] for __ in range(board_size)]
+        self.array = np.full(shape=[board_size, board_size], fill_value=None)
 
     def get_row(self, row, col=None):
         """
@@ -23,10 +26,7 @@ class SudokuGrid:
         :param col: If provided, returned values will exclude specified cell
         :return:
         """
-        if col is None:
-            return set(self.array[row])
-        ret = self.array[row][:col] + self.array[row][col + 1:]
-        return set(ret)
+        return set(np.delete(self.array[row], col) if col else self.array[row])
 
     def get_column(self, col, row=None):
         """
@@ -39,13 +39,9 @@ class SudokuGrid:
         :param row: If provided, returned values will exclude specified cell
         :return:
         """
-        column = set()
-        for i in range(9):
-            if row is None or i is not row:
-                column.add(self.array[i][col])
-        return column
+        return set(np.delete(self.array[:, col], row) if row else self.array[:, col])
 
-    def get_box(self, box_num, row_idx=None, col=None):
+    def get_box(self, box_num, row=None, col=None):
         """
         Returns values in the specified box
         Boxes are laid out like so:
@@ -53,22 +49,22 @@ class SudokuGrid:
         | 3 | 4 | 5 |
         | 6 | 7 | 8 |
         :param box_num: the box number to fetch
-        :param row_idx: row index - if given with col, will omit the specified cell from the returned set
+        :param row: row index - if given with col, will omit the specified cell from the returned set
         :param col: column index - if given with row, will omit the specified cell from the returned set
         :return: Set of values contained in the box (8 or 9 values)
         """
-        box = set()
         box_column = box_num % 3  # which box column to find the box in
         box_row = box_num // 3  # which box row to find the box in
 
-        column_num_max = ((box_column + 1) * 3)
-        row_num_max = ((box_row + 1) * 3)
+        col_max = ((box_column + 1) * 3)
+        row_max = ((box_row + 1) * 3)
 
-        for row in range(row_num_max - 3, row_num_max):
-            for digit in range(column_num_max - 3, column_num_max):
-                if (row_idx is None and col is None) or (row is not row_idx and digit is not col):
-                    box.add(self.array[row][digit])
-        return box
+        if (row and col) and (row_max - 3 < row < row_max) and (col_max - 3 < col < col_max):
+            box = np.delete(self.array[row_max - 3:row_max, col_max - 3:col_max], ((row * col) % 9) - 1)
+        else:
+            box = self.array[row_max - 3:row_max, col_max - 3:col_max].flatten()
+
+        return set(box)  # for why set() is used over np.unique(), see https://stackoverflow.com/a/59111870/13408445
 
     def possible_digits(self, row=None, col=None):
         """
@@ -80,7 +76,7 @@ class SudokuGrid:
         if row is None or col is None:
             return self._ALLOWED_DIGITS
         return self._ALLOWED_DIGITS - (
-                    self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3))
+                self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3))
 
     def check_board(self):
         """
@@ -96,23 +92,10 @@ class SudokuGrid:
                 box_num = mult + add
 
                 conflicts = self.get_row(row, col) | self.get_column(col, row) | self.get_box(box_num, row, col)
-                if self.array[row][col] in conflicts:
+                if self.array[row, col] in conflicts:
                     return False
         return True
 
     def __str__(self):
-        out = "-------------------------\n"
-        row_count = 1
-        col_count = 1
-        for row in self.array:
-            out += "| "
-            for digit in row:
-                out += str(digit if digit != None else "X") + " "
-                if col_count % 3 == 0:
-                    out += "| "
-                col_count += 1
-            out += "\n"
-            if row_count % 3 == 0:
-                out += "-------------------------\n"
-            row_count += 1
-        return out
+        # todo: format nicely
+        return str(self.array)
