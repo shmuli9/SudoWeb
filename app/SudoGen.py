@@ -16,9 +16,9 @@ def rec_gen_board():
     possible = sudoku_grid.possible_digits(0, 0)
     for p in random.sample(possible, len(possible)):  # random is required so that each board is (probably) unique
         sudoku_grid.array[0, 0] = p
-        if try_a_digit(0, 1):
+        if try_a_digit(0, 1):  # and sudoku_grid.check_board()
             return sudoku_grid
-    print("Failed to generate board")
+    print(f"Failed to generate board\n{sudoku_grid}")
 
 
 def try_a_digit(row, column):

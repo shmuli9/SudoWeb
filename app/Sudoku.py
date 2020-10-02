@@ -26,7 +26,9 @@ class SudokuGrid:
         :param col: If provided, returned values will exclude specified cell
         :return:
         """
-        return set(self.array[row, col + 1:]) | set(self.array[row, :col]) if col else set(self.array[row])
+        if col is not None:
+            return set(self.array[row, col + 1:]) | set(self.array[row, :col])
+        return set(self.array[row])
 
     def get_column(self, col, row=None):
         """
@@ -39,7 +41,9 @@ class SudokuGrid:
         :param row: If provided, returned values will exclude specified cell
         :return:
         """
-        return set(self.array[row + 1:, col]) | set(self.array[:row, col]) if row else set(self.array[:, col])
+        if row is not None:
+            return set(self.array[row + 1:, col]) | set(self.array[:row, col])
+        return set(self.array[:, col])
 
     def get_box(self, box_num, row=None, col=None):
         """
@@ -65,9 +69,9 @@ class SudokuGrid:
         box = self.array[row_min:row_max, col_min:col_max].flatten()
 
         if (row is not None and col is not None) and (row_min <= row < row_max) and (col_min <= col < col_max):
-            r = (row % 3) + 1
-            c = (col % 3) + 1
-            pos = (r * c) - 1
+            r = (row % 3) * 3
+            c = col % 3
+            pos = r + c
             return set(box[:pos]) | set(box[pos + 1:])
 
         return set(box)  # for why set() is used over np.unique(), see https://stackoverflow.com/a/59111870/13408445
@@ -94,11 +98,8 @@ class SudokuGrid:
         """
         for row in range(9):
             for col in range(9):
-                add = col // 3
-                mult = (row // 3) * 3
-                box_num = mult + add
-
-                conflicts = self.get_row(row, col) | self.get_column(col, row) | self.get_box(box_num, row, col)
+                conflicts = self.get_row(row, col) | self.get_column(col, row) | self.get_box(
+                    (col // 3) + (row // 3) * 3, row, col)
                 if self.array[row, col] in conflicts:
                     return False
         return True
