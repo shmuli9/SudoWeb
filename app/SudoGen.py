@@ -70,7 +70,7 @@ def sanity_check():
     sudoku_grid = SudokuGen()
     sudoku_grid.generate_board()
 
-    if not sudoku_grid.check_board():
+    if not sudoku_grid.validate_board():
         print("Algorithm doesnt appear to be working...cancelling test run")
         print(sudoku_grid)
         return False
