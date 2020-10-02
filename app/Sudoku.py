@@ -5,7 +5,8 @@ class SudokuGrid:
     _ALLOWED_DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
     def __init__(self, board_size=9):
-        self.array = np.full(shape=[board_size, board_size], fill_value=None)
+        self.board_size = board_size
+        self.array = np.full(shape=[self.board_size, self.board_size], fill_value=None)
 
     def get_row(self, row, col=None):
         """
@@ -76,31 +77,31 @@ class SudokuGrid:
 
         return set(box)  # for why set() is used over np.unique(), see https://stackoverflow.com/a/59111870/13408445
 
-    def possible_digits(self, row=None, col=None):
+    def conflicts(self, row, col):
         """
-        Find the possible digits for current cell, by subtracting confliciting digits from set of allowed digits (1-9)
+        Find the digits that conflict with the selected cell
+        :param row: row index
+        :param col: column index
+        :return: set of conflicting digits
+        """
+        return self.get_row(row, col) | self.get_column(col, row) | self.get_box((col // 3) + (row // 3) * 3, row, col)
+
+    def possible_digits(self, row, col):
+        """
+        Find the possible digits a cell, by subtracting conflicting digits from the set of allowed digits (1-9)
         :param row: row index
         :param col: column index
         :return: set of non-conflicting digits
         """
-        if row is None or col is None:
-            return self._ALLOWED_DIGITS
+        return self._ALLOWED_DIGITS - self.conflicts(row, col)
 
-        conflicts = self.get_row(row) | self.get_column(col) | self.get_box((col // 3) + (row // 3) * 3)
-        return self._ALLOWED_DIGITS - conflicts
-
-    def check_board(self):
+    def validate_board(self):
         """
         Returns True if no cell has conflicts with other cells, False otherwise
-
-        todo: check that all digits occur (probably if the board has no conflicts then it is valid, unless using other chars)
-        :return:
         """
-        for row in range(9):
-            for col in range(9):
-                conflicts = self.get_row(row, col) | self.get_column(col, row) | self.get_box(
-                    (col // 3) + (row // 3) * 3, row, col)
-                if self.array[row, col] in conflicts:
+        for row in range(self.board_size):
+            for col in range(self.board_size):
+                if self.array[row, col] in self.conflicts(row, col):
                     return False
         return True
 

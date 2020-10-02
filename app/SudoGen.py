@@ -75,4 +75,4 @@ def test_board_generation(repeat=10):
 def sanity_check():
     sudoku_grid = SudokuGen()
     sudoku_grid.generate_board()
-    return sudoku_grid.check_board()
+    return sudoku_grid.validate_board()
