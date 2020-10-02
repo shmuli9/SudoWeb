@@ -8,18 +8,16 @@ class SudokuGen(SudokuGrid):
     def __init__(self, board_size=9):
         super(SudokuGen, self).__init__(board_size)
 
-    def rec_gen_board(self):
+    def generate_board(self):
         """
         Start from top left cell (0,0) place a random digit and then call try_a_digit to recursively run thorugh the rest
         of the board, attemptiong to place random, legal digits, and recursively unwinding and trying the next value if a
         cell down the line becomes impossible to fill
          :return:
         """
-        possible = self.possible_digits(0, 0)
-        for p in random.sample(possible, len(possible)):  # random is required so that each board is (probably) unique
-            self.array[0, 0] = p
-            if self.try_a_digit(0, 1):  # and sudoku_grid.check_board()
-                return self
+        if self.try_a_digit(0, 0):  # and self.check_board()
+            return self
+
         print(f"Failed to generate board\n{self}")
 
     def try_a_digit(self, row, column):
@@ -48,10 +46,18 @@ class SudokuGen(SudokuGrid):
 def test_board_generation(repeat=10):
     boards = []
 
+    # regression test
+    if not sanity_check():
+        print("Algorithm doesnt appear to be working...cancelling test run")
+        grid = SudokuGen()
+        grid.generate_board()
+        print(grid)
+        return
+
     start = time.time()
     for _ in range(repeat):
         sudoku_grid = SudokuGen()
-        sudoku_grid.rec_gen_board()
+        boards.append(sudoku_grid.generate_board())
     end = time.time()
     total = (end - start)
 
@@ -64,3 +70,9 @@ def test_board_generation(repeat=10):
         for i in range(len(boards)):
             print(f"Board {i + 1}:")
             print(boards[i])
+
+
+def sanity_check():
+    sudoku_grid = SudokuGen()
+    sudoku_grid.generate_board()
+    return sudoku_grid.check_board()
