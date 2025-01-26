@@ -118,35 +118,46 @@ def generate_single_board(_):
     grid = SudokuGen()
     return grid.generate_board()
 
-def generate_boards_parallel(num_boards: int, num_workers: int = None) -> List[SudokuGrid]:
+def generate_boards_parallel(num_boards: int, num_workers: int = None, batch_size: int = 1000) -> List[SudokuGrid]:
     """
-    Generate multiple Sudoku boards in parallel
+    Generate multiple Sudoku boards in parallel using batched processing to manage memory
     :param num_boards: Number of boards to generate
     :param num_workers: Number of worker processes (defaults to CPU count)
+    :param batch_size: Number of boards to generate in each batch
     :return: List of generated boards
     """
     if num_workers is None:
         num_workers = cpu_count()
     
+    results = []
+    remaining = num_boards
+    
     with Pool(processes=num_workers) as pool:
-        return pool.map(generate_single_board, range(num_boards))
+        while remaining > 0:
+            current_batch = min(batch_size, remaining)
+            batch_results = pool.map(generate_single_board, range(current_batch))
+            results.extend(batch_results)
+            remaining -= current_batch
+            
+    return results
 
-def benchmark_parallel_generation(iterations: int = 1000, num_workers: int = None) -> Tuple[List[float], float, float, float]:
+def benchmark_parallel_generation(iterations: int = 1000, num_workers: int = None, batch_size: int = 1000) -> Tuple[List[float], float, float, float]:
     """
     Benchmark parallel board generation performance
     :param iterations: Number of boards to generate
     :param num_workers: Number of worker processes
+    :param batch_size: Number of boards to generate in each batch
     :return: Tuple of (all_times, min_time, max_time, avg_time)
     """
     start = time.perf_counter()
-    generate_boards_parallel(iterations, num_workers)
+    generate_boards_parallel(iterations, num_workers, batch_size)
     end = time.perf_counter()
     total_time = (end - start) * 1000  # Convert to milliseconds
     
     # For parallel benchmarks, we only measure total time since individual times aren't meaningful
     return [total_time], total_time, total_time, total_time
 
-def run_benchmarks(iterations: List[int] = [1, 10, 100, 1000]):
+def run_benchmarks(iterations: List[int] = [1, 10, 100, 1000, 10000]):
     """
     Run benchmarks with different iteration counts and print results
     :param iterations: List of iteration counts to test
@@ -157,6 +168,8 @@ def run_benchmarks(iterations: List[int] = [1, 10, 100, 1000]):
     print("\nSingle-threaded Performance:")
     print("---------------------------")
     for n in iterations:
+        if n > 1000:  # Skip large numbers for single-threaded
+            continue
         print(f"\nGenerating {n} board{'s' if n > 1 else ''}:")
         times, min_time, max_time, avg_time = benchmark_board_generation(n)
         
@@ -177,13 +190,15 @@ def run_benchmarks(iterations: List[int] = [1, 10, 100, 1000]):
     for n in iterations:
         if n < 100:  # Skip small iterations for parallel as overhead would dominate
             continue
-        print(f"\nGenerating {n} board{'s' if n > 1 else ''}:")
-        times, min_time, max_time, avg_time = benchmark_parallel_generation(n, num_workers)
+        print(f"\nGenerating {n:,} board{'s' if n > 1 else ''}:")
+        batch_size = min(1000, max(100, n // (num_workers * 2)))  # Dynamic batch sizing
+        times, min_time, max_time, avg_time = benchmark_parallel_generation(n, num_workers, batch_size)
         total_time = times[0]
         boards_per_second = (n / total_time) * 1000
         
         print(f"  Total time: {total_time:.3f}ms")
-        print(f"  Boards/second: {boards_per_second:.1f}")
+        print(f"  Boards/second: {boards_per_second:,.1f}")
+        print(f"  Batch size: {batch_size:,}")
 
 if __name__ == "__main__":
     run_benchmarks()
