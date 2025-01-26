@@ -1,7 +1,6 @@
 package sudoku
 
 import (
-	"fmt"
 	"math/rand"
 	"runtime"
 	"sync"
@@ -193,7 +192,6 @@ func workerBatch(jobs <-chan workBatch, results chan<- boardResult, completed *i
 				// Create a new grid for the next iteration, reusing memory
 				gen.Grid = NewGrid(9)
 			} else {
-				fmt.Println("Failed to generate board")
 				// If generation failed, retry with a new grid
 				gen.Grid = NewGrid(9)
 				i-- // Retry the same index
