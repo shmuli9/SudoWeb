@@ -43,14 +43,38 @@ func main() {
 
 	if *count > 1 {
 		fmt.Printf("Generating %d boards using %d CPU cores...\n", *count, runtime.NumCPU())
-		boards, duration := sudoku.GenerateBoards(*count)
-		fmt.Printf("Generated %d boards in %v (%.0f boards/second)\n", *count, duration, float64(*count)/duration.Seconds())
 
-		if *count <= 10 {
-			fmt.Println("\nGenerated boards:")
-			for i, board := range boards {
-				fmt.Printf("\nBoard %d:\n", i+1)
-				printBoard(board)
+		var duration time.Duration
+		if *count > 100000 {
+			// Use streaming for large numbers of boards
+			start := time.Now()
+			boards, done := sudoku.StreamBoards(*count)
+			boardCount := 0
+
+			// Process boards as they come in
+			for range boards {
+				boardCount++
+				if boardCount%500000 == 0 {
+					fmt.Printf("Generated %d boards...\n", boardCount)
+				}
+			}
+			<-done // Wait for completion
+			duration = time.Since(start)
+
+			fmt.Printf("Generated %d boards in %v (%.0f boards/second)\n",
+				*count, duration, float64(*count)/duration.Seconds())
+		} else {
+			// Use original method for smaller numbers
+			boards, duration := sudoku.GenerateBoards(*count)
+			fmt.Printf("Generated %d boards in %v (%.0f boards/second)\n",
+				*count, duration, float64(*count)/duration.Seconds())
+
+			if *count <= 10 {
+				fmt.Println("\nGenerated boards:")
+				for i, board := range boards {
+					fmt.Printf("\nBoard %d:\n", i+1)
+					printBoard(board)
+				}
 			}
 		}
 	} else {

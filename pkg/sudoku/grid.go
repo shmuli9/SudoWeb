@@ -45,8 +45,15 @@ func (g *Grid) Clone() *Grid {
 	for i := range g.board {
 		copy(newGrid.board[i], g.board[i])
 	}
-	// Recompute state
-	newGrid.ValidateBoard()
+	// Copy state arrays
+	for i := range g.rows {
+		copy(newGrid.rows[i], g.rows[i])
+		copy(newGrid.cols[i], g.cols[i])
+		copy(newGrid.boxes[i], g.boxes[i])
+	}
+	// Copy possible digits array
+	newGrid.possible = make([]int, len(g.possible))
+	copy(newGrid.possible, g.possible)
 	return newGrid
 }
 

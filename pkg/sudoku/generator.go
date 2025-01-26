@@ -213,3 +213,69 @@ func max(a, b int) int {
 	}
 	return b
 }
+
+// StreamBoards generates boards and streams them through a channel instead of storing them in memory
+func StreamBoards(count int) (<-chan *Grid, chan struct{}) {
+	boards := make(chan *Grid, 10000)
+	done := make(chan struct{})
+
+	go func() {
+		defer close(boards)
+		defer close(done)
+
+		numCPU := runtime.NumCPU()
+		numWorkers := numCPU * 8
+		pool := newWorkerPool(numWorkers)
+
+		var wg sync.WaitGroup
+		wg.Add(numWorkers)
+
+		// Shared counter for all workers
+		var completed int32
+
+		// Channel for distributing work
+		jobs := make(chan struct{}, numWorkers*8)
+
+		// Start workers
+		for i := 0; i < numWorkers; i++ {
+			go func() {
+				defer wg.Done()
+				gen := pool.get()
+				defer pool.put(gen)
+
+				for range jobs {
+					// Try to increment counter, exit if we've hit the limit
+					if atomic.AddInt32(&completed, 1) > int32(count) {
+						atomic.AddInt32(&completed, -1) // Undo the increment
+						return
+					}
+
+					// Generate and send board
+					if gen.GenerateBoard() {
+						boards <- gen.Grid.Clone()
+					} else {
+						atomic.AddInt32(&completed, -1) // Failed generation
+						gen.Grid = NewGrid(9)
+						// Put the job back
+						select {
+						case jobs <- struct{}{}:
+						default:
+							// If channel is full, just continue
+						}
+					}
+				}
+			}()
+		}
+
+		// Fill job channel
+		for i := 0; i < count; i++ {
+			jobs <- struct{}{}
+		}
+		close(jobs)
+
+		// Wait for all workers
+		wg.Wait()
+	}()
+
+	return boards, done
+}
