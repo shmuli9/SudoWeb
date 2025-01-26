@@ -1,6 +1,7 @@
 package sudoku
 
 import (
+	"fmt"
 	"math/rand"
 	"runtime"
 	"sync"
@@ -25,8 +26,8 @@ func NewGenerator(boardSize int) *Generator {
 // GenerateBoard generates a complete valid Sudoku board
 func (g *Generator) GenerateBoard() bool {
 	// Reset the board and state
-	for row := 0; row < g.boardSize; row++ {
-		for col := 0; col < g.boardSize; col++ {
+	for row := range g.board {
+		for col := range g.board[row] {
 			g.Set(row, col, 0)
 		}
 	}
@@ -192,6 +193,7 @@ func workerBatch(jobs <-chan workBatch, results chan<- boardResult, completed *i
 				// Create a new grid for the next iteration, reusing memory
 				gen.Grid = NewGrid(9)
 			} else {
+				fmt.Println("Failed to generate board")
 				// If generation failed, retry with a new grid
 				gen.Grid = NewGrid(9)
 				i-- // Retry the same index

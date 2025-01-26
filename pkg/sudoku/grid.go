@@ -42,7 +42,7 @@ func NewGrid(boardSize int) *Grid {
 func (g *Grid) Clone() *Grid {
 	newGrid := NewGrid(g.boardSize)
 	// Copy board data
-	for i := 0; i < g.boardSize; i++ {
+	for i := range g.board {
 		copy(newGrid.board[i], g.board[i])
 	}
 	// Recompute state
@@ -100,9 +100,9 @@ func (g *Grid) Get(row, col int) int {
 
 // ValidateBoard checks if the current board state is valid
 func (g *Grid) ValidateBoard() bool {
-	// Reset all state arrays
-	for i := 0; i < g.boardSize; i++ {
-		for j := 0; j <= 9; j++ {
+	// Reset all state arrays using range
+	for i := range g.rows {
+		for j := range g.rows[i] {
 			g.rows[i][j] = false
 			g.cols[i][j] = false
 			g.boxes[i][j] = false
@@ -110,8 +110,8 @@ func (g *Grid) ValidateBoard() bool {
 	}
 
 	// Recompute state from board
-	for row := 0; row < g.boardSize; row++ {
-		for col := 0; col < g.boardSize; col++ {
+	for row := range g.board {
+		for col := range g.board[row] {
 			val := g.board[row][col]
 			if val != 0 {
 				boxIdx := (row/3)*3 + col/3

@@ -17,9 +17,9 @@ func init() {
 
 func printBoard(g *sudoku.Grid) {
 	fmt.Println("┌───────┬───────┬───────┐")
-	for row := 0; row < 9; row++ {
+	for row := range 9 {
 		fmt.Print("│")
-		for col := 0; col < 9; col++ {
+		for col := range 9 {
 			if val := g.Get(row, col); val != 0 {
 				fmt.Printf(" %d", val)
 			} else {
