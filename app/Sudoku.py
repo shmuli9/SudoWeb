@@ -1,13 +1,19 @@
-import numpy as np
-
-
 class SudokuGrid:
-    _ALLOWED_DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9}
+    """Base class for Sudoku grid operations and validation"""
+    
+    _ALLOWED_DIGITS = frozenset({1, 2, 3, 4, 5, 6, 7, 8, 9})
+    # Pre-compute box coordinates for O(1) lookups
+    _BOX_COORDS = {(i, j): (i // 3) * 3 + j // 3 for i in range(9) for j in range(9)}
+    # Pre-compute box cell sets for efficient iteration
+    _BOX_CELLS = {box: {(r, c) for r in range(9) for c in range(9) if (r // 3) * 3 + c // 3 == box} for box in range(9)}
 
     def __init__(self, board_size=9):
+        """Initialize an empty Sudoku grid
+        :param board_size: Size of the board (default 9x9)
+        """
         self.board_size = board_size
-        self.array = np.full(shape=[self.board_size, self.board_size], fill_value=None)
-
+        self.array = [[None] * board_size for _ in range(board_size)]
+        
     def get_row(self, row, col=None):
         """
         Returns values in the specified row
@@ -25,11 +31,11 @@ class SudokuGrid:
         -----------
         :param row: The row to return
         :param col: If provided, returned values will exclude specified cell
-        :return:
+        :return: Set of non-None values in the row
         """
         if col is not None:
-            return set(self.array[row, col + 1:]) | set(self.array[row, :col])
-        return set(self.array[row])
+            return {self.array[row][i] for i in range(self.board_size) if i != col and self.array[row][i] is not None}
+        return {x for x in self.array[row] if x is not None}
 
     def get_column(self, col, row=None):
         """
@@ -40,11 +46,11 @@ class SudokuGrid:
         |   |   |   |     |   |
         :param col: The column to return
         :param row: If provided, returned values will exclude specified cell
-        :return:
+        :return: Set of non-None values in the column
         """
         if row is not None:
-            return set(self.array[row + 1:, col]) | set(self.array[:row, col])
-        return set(self.array[:, col])
+            return {self.array[i][col] for i in range(self.board_size) if i != row and self.array[i][col] is not None}
+        return {self.array[i][col] for i in range(self.board_size) if self.array[i][col] is not None}
 
     def get_box(self, box_num, row=None, col=None):
         """
@@ -56,26 +62,13 @@ class SudokuGrid:
         :param box_num: the box number to fetch
         :param row: row index - if given with col, will omit the specified cell from the returned set
         :param col: column index - if given with row, will omit the specified cell from the returned set
-        :return: Set of values contained in the box (8 or 9 values)
+        :return: Set of non-None values contained in the box
         """
-        box_column = box_num % 3  # which box column to find the box in
-        box_row = box_num // 3  # which box row to find the box in
-
-        col_max = ((box_column + 1) * 3)
-        col_min = col_max - 3
-
-        row_max = ((box_row + 1) * 3)
-        row_min = row_max - 3
-
-        box = self.array[row_min:row_max, col_min:col_max].flatten()
-
-        if (row is not None and col is not None) and (row_min <= row < row_max) and (col_min <= col < col_max):
-            r = (row % 3) * 3
-            c = col % 3
-            pos = r + c
-            return set(box[:pos]) | set(box[pos + 1:])
-
-        return set(box)  # for why set() is used over np.unique(), see https://stackoverflow.com/a/59111870/13408445
+        if row is not None and col is not None:
+            return {self.array[r][c] for r, c in self._BOX_CELLS[box_num] 
+                   if (r != row or c != col) and self.array[r][c] is not None}
+        return {self.array[r][c] for r, c in self._BOX_CELLS[box_num] 
+               if self.array[r][c] is not None}
 
     def conflicts(self, row, col):
         """
@@ -84,27 +77,31 @@ class SudokuGrid:
         :param col: column index
         :return: set of conflicting digits
         """
-        return self.get_row(row, col) | self.get_column(col, row) | self.get_box((col // 3) + (row // 3) * 3, row, col)
+        box = self._BOX_COORDS[(row, col)]
+        return self.get_row(row, col) | self.get_column(col, row) | self.get_box(box, row, col)
 
     def possible_digits(self, row, col):
         """
-        Find the possible digits a cell, by subtracting conflicting digits from the set of allowed digits (1-9)
+        Find the possible digits for a cell by subtracting conflicting digits from the set of allowed digits (1-9)
         :param row: row index
         :param col: column index
-        :return: set of non-conflicting digits
+        :return: set of non-conflicting digits that can be placed in this cell
         """
         return self._ALLOWED_DIGITS - self.conflicts(row, col)
 
     def validate_board(self):
         """
         Returns True if no cell has conflicts with other cells, False otherwise
+        This is used as a sanity check to ensure the board generation algorithm is working correctly
         """
-        for row in range(self.board_size):
-            for col in range(self.board_size):
-                if self.array[row, col] in self.conflicts(row, col):
-                    return False
-        return True
+        return all(self.array[row][col] not in self.conflicts(row, col)
+                  for row in range(self.board_size)
+                  for col in range(self.board_size)
+                  if self.array[row][col] is not None)
 
     def __str__(self):
-        # todo: format nicely
-        return str(self.array)
+        """
+        Returns a string representation of the board with proper formatting
+        Empty cells are represented by underscores
+        """
+        return '\n'.join(' '.join(str(x) if x is not None else '_' for x in row) for row in self.array)
